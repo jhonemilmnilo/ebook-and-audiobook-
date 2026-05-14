@@ -13,7 +13,7 @@ class AiService {
       final prompt = 'Explain this text or word from a book simply and concisely: "$text"';
       final content = [Content.text(prompt)];
       final response = await _model.generateContent(content);
-      return response.text ?? 'Sorry pare, I couldn\'t explain that.';
+      return response.text ?? 'Sorry, I couldn\'t explain that.';
     } catch (e) {
       return 'Error connecting to Gemini: $e';
     }
@@ -22,7 +22,7 @@ class AiService {
   Future<String> chat(List<Content> history) async {
     try {
       final response = await _model.generateContent(history);
-      return response.text ?? 'Sorry pare, I didn\'t quite catch that.';
+      return response.text ?? 'Sorry, I didn\'t quite catch that.';
     } catch (e) {
       return 'AI Error: $e';
     }

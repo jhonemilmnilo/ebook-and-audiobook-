@@ -31,14 +31,28 @@ class ReaderScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: EpubView(
-        controller: controller,
-        builders: EpubViewBuilders<DefaultBuilderOptions>(
-          options: const DefaultBuilderOptions(
-            textStyle: TextStyle(
-              fontSize: 18,
-              height: 1.5,
-              color: AppTheme.textPrimary,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: DefaultTextStyle(
+          textAlign: TextAlign.left,
+          style: const TextStyle(
+            fontSize: 18,
+            height: 1.3, // Reduced from 1.6 to fix large vertical gaps
+            color: AppTheme.textPrimary,
+            fontFamily: 'Georgia',
+          ),
+          child: EpubView(
+            controller: controller,
+            builders: EpubViewBuilders<DefaultBuilderOptions>(
+              options: const DefaultBuilderOptions(
+                textStyle: TextStyle(
+                  fontSize: 18,
+                  height: 1.3, // Match the DefaultTextStyle height
+                  color: AppTheme.textPrimary,
+                  fontFamily: 'Georgia',
+                ),
+              ),
+              chapterDividerBuilder: (_) => const Divider(height: 1, color: AppTheme.surface),
             ),
           ),
         ),

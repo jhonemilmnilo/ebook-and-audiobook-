@@ -29,7 +29,7 @@ class FavoritesScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'All your favorites in one place, pare.',
+                'All your favorites in one place.',
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   color: AppTheme.textSecondary,
@@ -76,7 +76,7 @@ class FavoritesScreen extends ConsumerWidget {
           const Icon(Icons.favorite_border, size: 64, color: AppTheme.textSecondary),
           const SizedBox(height: 16),
           Text(
-            'Walang laman, pare!',
+            'No favorites yet!',
             style: GoogleFonts.outfit(
               fontSize: 18,
               color: AppTheme.textPrimary,

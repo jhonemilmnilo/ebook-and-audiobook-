@@ -21,7 +21,7 @@ class ChatbotScreen extends StatefulWidget {
 class _ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _controller = TextEditingController();
   final List<Map<String, String>> _messages = [
-    {'role': 'ai', 'text': 'Hey pare! I\'m your AI Reading Assistant. Any lines or words you don\'t understand? Just ask! 🤖'}
+    {'role': 'ai', 'text': 'Hey there! I\'m your AI Reading Assistant. Any lines or words you don\'t understand? Just ask! 🤖'}
   ];
   bool _isLoading = false;
 
@@ -128,7 +128,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     await Future.delayed(const Duration(seconds: 1));
     
     setState(() {
-      _messages.add({'role': 'ai', 'text': 'Pare, I need a Gemini API Key to actually process this! But the logic is already here. 🚀'});
+      _messages.add({'role': 'ai', 'text': 'I need a Gemini API Key to actually process this! But the logic is already here. 🚀'});
       _isLoading = false;
     });
   }

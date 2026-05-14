@@ -28,54 +28,89 @@ class LibrarySyncService {
   Future<void> syncLibrary() async {
     if (_isSyncing) return;
     _isSyncing = true;
-    print('DEBUG: Starting Library Sync (Dual-Source Aggregator)... 🚀');
+    print('DEBUG: Starting Persistent Library Sync Engine... 🚀');
 
     final db = ref.read(databaseProvider);
     final directory = await getApplicationDocumentsDirectory();
 
-    // 1. Fetch from Gutendex
-    try {
-      print('DEBUG: Fetching from Gutendex...');
-      final gutendexBooks = await ref.read(bookServiceProvider).getTopEbooks();
-      // Sync only top 5 from Gutendex to save time/bandwidth initially
-      for (var book in gutendexBooks.take(5)) {
-        final bookId = 'gutendex_${book['id']}';
-        final epubUrl = book['formats']['application/epub+zip'];
-        final title = book['title'] ?? 'Unknown Title';
-        final author = (book['authors'] as List?)?.isNotEmpty == true ? book['authors'][0]['name'] : 'Unknown Author';
-        final coverUrl = book['formats']['image/jpeg'] ?? '';
+    int downloadedThisSession = 0;
+    const int sessionLimit = 60; // Increased to ensure plenty of books
 
-        await _processBook(db, directory, bookId, title, author, coverUrl, epubUrl, 'gutendex');
+    // 1. Gutendex Continuous Sync (Paginated)
+    int gutendexPage = 1;
+    while (downloadedThisSession < sessionLimit && gutendexPage <= 5) {
+      try {
+        print('DEBUG: Syncing Gutendex Page $gutendexPage...');
+        final response = await _dio.get('https://gutendex.com/books', queryParameters: {'page': gutendexPage});
+        final List gutendexBooks = response.data['results'];
+        
+        for (var book in gutendexBooks) {
+          if (downloadedThisSession >= sessionLimit) break;
+
+          final bookId = 'gutendex_${book['id']}';
+          final epubUrl = book['formats']['application/epub+zip'];
+          if (epubUrl == null) continue;
+
+          final title = book['title'] ?? 'Unknown Title';
+          final author = (book['authors'] as List?)?.isNotEmpty == true ? book['authors'][0]['name'] : 'Unknown Author';
+          final coverUrl = book['formats']['image/jpeg'] ?? '';
+
+          final success = await _processBook(db, directory, bookId, title, author, coverUrl, epubUrl, 'gutendex');
+          if (success) downloadedThisSession++;
+          
+          // Small delay to avoid rate limiting
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
+        gutendexPage++;
+      } catch (e) {
+        print('DEBUG ERROR: Gutendex Sync failed at page $gutendexPage: $e');
+        break;
       }
-    } catch (e) {
-      print('DEBUG ERROR: Gutendex Sync failed: $e');
     }
 
-    // 2. Fetch from Open Library
-    try {
-      print('DEBUG: Fetching from Open Library...');
-      final openLibraryService = ref.read(openLibraryServiceProvider);
-      // We search for books that have fulltext available
-      final olBooks = await openLibraryService.searchBooks('classic');
-      
-      for (var book in olBooks.take(5)) {
-        final bookId = 'ol_${book['key']}';
-        final title = book['title'] ?? 'Unknown Title';
-        final author = (book['author_name'] as List?)?.isNotEmpty == true ? book['author_name'][0] : 'Unknown Author';
-        final coverUrl = openLibraryService.getCoverUrl(book['cover_i']);
-        final epubUrl = openLibraryService.getIaEpubUrl(book['ia']);
+    // 2. Open Library Continuous Sync (Paginated)
+    int olPage = 1;
+    while (downloadedThisSession < sessionLimit && olPage <= 3) {
+      try {
+        print('DEBUG: Syncing Open Library Page $olPage...');
+        final response = await _dio.get('https://openlibrary.org/search.json', queryParameters: {
+          'q': 'classic',
+          'has_fulltext': 'true',
+          'page': olPage,
+          'limit': 20,
+        });
+        final List olBooks = response.data['docs'];
+        final olService = ref.read(openLibraryServiceProvider);
+        
+        for (var book in olBooks) {
+          if (downloadedThisSession >= sessionLimit) break;
 
-        await _processBook(db, directory, bookId, title, author, coverUrl, epubUrl, 'open_library');
+          final bookId = 'ol_${book['key']}';
+          final title = book['title'] ?? 'Unknown Title';
+          final author = (book['author_name'] as List?)?.isNotEmpty == true ? book['author_name'][0] : 'Unknown Author';
+          final coverUrl = olService.getCoverUrl(book['cover_i']);
+          final epubUrl = olService.getIaEpubUrl(book['ia']);
+
+          if (epubUrl == null) continue;
+
+          final success = await _processBook(db, directory, bookId, title, author, coverUrl, epubUrl, 'open_library');
+          if (success) downloadedThisSession++;
+
+          // Small delay to avoid rate limiting
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
+        olPage++;
+      } catch (e) {
+        print('DEBUG ERROR: Open Library Sync failed at page $olPage: $e');
+        break;
       }
-    } catch (e) {
-      print('DEBUG ERROR: Open Library Sync failed: $e');
     }
 
-    print('DEBUG: Library Sync Complete! ✅');
+    print('DEBUG: Session Sync Complete! Downloaded $downloadedThisSession new books. ✅');
     _isSyncing = false;
   }
 
-  Future<void> _processBook(
+  Future<bool> _processBook(
     AppDatabase db,
     Directory directory,
     String bookId,
@@ -85,11 +120,11 @@ class LibrarySyncService {
     String? epubUrl,
     String source,
   ) async {
-    if (epubUrl == null) return;
+    if (epubUrl == null) return false;
 
     // Check if already saved
     final existing = await db.getLocalBookById(bookId);
-    if (existing != null) return; // Already downloaded
+    if (existing != null) return false; // Already downloaded
 
     final safeTitle = title.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
     final filePath = '${directory.path}/$safeTitle.epub';
@@ -111,15 +146,19 @@ class LibrarySyncService {
             source: Value(source),
           ));
           print('DEBUG: Saved $title to local database. ✅');
+          return true;
         } else {
            file.deleteSync();
+           return false;
         }
       }
+      return false;
     } catch (e) {
       print('DEBUG ERROR: Failed to download $title: $e');
       if (file.existsSync()) {
         try { file.deleteSync(); } catch (_) {}
       }
+      return false;
     }
   }
 }

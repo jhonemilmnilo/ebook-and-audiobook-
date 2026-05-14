@@ -15,6 +15,13 @@ class HomeScreen extends ConsumerWidget {
     final localBooksAsync = ref.watch(localBooksProvider);
     final audiobooksAsync = ref.watch(topAudiobooksProvider);
 
+    // Auto-sync on startup if library is empty
+    ref.listen(localBooksProvider, (previous, next) {
+      if (next.hasValue && next.value!.isEmpty) {
+        ref.read(librarySyncServiceProvider).syncLibrary();
+      }
+    });
+
     return Scaffold(
       body: SafeArea(
         bottom: false,
@@ -31,7 +38,7 @@ class HomeScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Good Morning, Pare!',
+                        'Welcome Back!',
                         style: GoogleFonts.outfit(
                           fontSize: 16,
                           color: AppTheme.textSecondary,
@@ -39,7 +46,7 @@ class HomeScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'What are we reading today?',
+                        'What are we reading?',
                         style: GoogleFonts.outfit(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -48,15 +55,6 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.sync, color: AppTheme.primary),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Starting background sync, pare! 🚀')),
-                      );
-                      ref.read(librarySyncServiceProvider).syncLibrary();
-                    },
-                  )
                 ],
               ),
               const SizedBox(height: 32),
@@ -70,28 +68,32 @@ class HomeScreen extends ConsumerWidget {
                     return Center(
                       child: Column(
                         children: [
-                          const Icon(Icons.library_books, size: 48, color: AppTheme.textSecondary),
-                          const SizedBox(height: 16),
-                          Text('No books downloaded yet.', style: GoogleFonts.inter(color: AppTheme.textSecondary)),
-                          TextButton(
-                            onPressed: () => ref.read(librarySyncServiceProvider).syncLibrary(),
-                            child: const Text('Tap sync button above to download books'),
-                          )
+                          const SizedBox(height: 40),
+                          const CircularProgressIndicator(),
+                          const SizedBox(height: 24),
+                          Text(
+                            'Initializing your library...',
+                            style: GoogleFonts.inter(
+                              color: AppTheme.textSecondary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Downloading the best classics for you',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: AppTheme.textSecondary.withOpacity(0.7),
+                            ),
+                          ),
                         ],
                       ),
                     );
                   }
-                  print('DEBUG: HomeScreen received ${books.length} local ebooks. Rendering now... 🎨');
                   return _buildBookList(context, ref, books, isAudio: false);
                 },
-                loading: () {
-                  print('DEBUG: Ebooks are still loading from DB... ⏳');
-                  return const Center(child: CircularProgressIndicator());
-                },
-                error: (err, stack) {
-                  print('DEBUG ERROR: Failed to load local ebooks: $err ❌');
-                  return Text('Error: $err');
-                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stack) => Text('Error loading library: $err'),
               ),
               const SizedBox(height: 40),
               _buildSectionHeader('Top Audiobooks'),
