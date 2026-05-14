@@ -29,7 +29,7 @@ class _MainShellState extends State<MainShell> {
       body: _pages[_selectedIndex],
       bottomNavigationBar: Container(
         margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-        height: 80,
+        height: 90,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
@@ -55,6 +55,8 @@ class _MainShellState extends State<MainShell> {
                 unselectedItemColor: AppTheme.textSecondary,
                 showSelectedLabels: false,
                 showUnselectedLabels: false,
+                selectedFontSize: 0,
+                unselectedFontSize: 0,
                 type: BottomNavigationBarType.fixed,
                 items: const [
                   BottomNavigationBarItem(

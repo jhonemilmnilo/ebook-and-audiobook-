@@ -6,8 +6,12 @@ class BookService {
   Future<List<dynamic>> getTopEbooks() async {
     try {
       final response = await _dio.get('/books');
-      if (response.statusCode == 200) {
-        return response.data['results'];
+      if (response.statusCode == 200 && response.data != null) {
+        final results = response.data['results'];
+        if (results is List) {
+          print('DEBUG: Successfully fetched ${results.length} ebooks from Gutendex 📚');
+          return results;
+        }
       }
       return [];
     } catch (e) {

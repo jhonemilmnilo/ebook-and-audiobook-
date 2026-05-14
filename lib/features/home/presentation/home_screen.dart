@@ -45,17 +45,35 @@ class HomeScreen extends ConsumerWidget {
               _buildSectionHeader('Top Ebooks'),
               const SizedBox(height: 16),
               ebooksAsync.when(
-                data: (books) => _buildBookList(books, isAudio: false),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Text('Error: $err'),
+                data: (books) {
+                  print('DEBUG: HomeScreen received ${books.length} ebooks. Rendering now... 🎨');
+                  return _buildBookList(context, ref, books, isAudio: false);
+                },
+                loading: () {
+                  print('DEBUG: Ebooks are still loading... ⏳');
+                  return const Center(child: CircularProgressIndicator());
+                },
+                error: (err, stack) {
+                  print('DEBUG ERROR: Failed to load ebooks: $err ❌');
+                  return Text('Error: $err');
+                },
               ),
               const SizedBox(height: 40),
               _buildSectionHeader('Top Audiobooks'),
               const SizedBox(height: 16),
               audiobooksAsync.when(
-                data: (books) => _buildAudioList(books),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Text('Error: $err'),
+                data: (books) {
+                  print('DEBUG: HomeScreen received ${books.length} audiobooks. Rendering now... 🎧');
+                  return _buildAudioList(context, ref, books);
+                },
+                loading: () {
+                  print('DEBUG: Audiobooks are still loading... ⏳');
+                  return const Center(child: CircularProgressIndicator());
+                },
+                error: (err, stack) {
+                  print('DEBUG ERROR: Failed to load audiobooks: $err ❌');
+                  return Text('Error: $err');
+                },
               ),
               const SizedBox(height: 120), // Padding for BottomNav
             ],
@@ -87,7 +105,7 @@ class HomeScreen extends ConsumerWidget {
 
   Widget _buildSectionHeader(String title) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.between,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           title,
@@ -108,7 +126,9 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBookList(List<dynamic> books, {required bool isAudio}) {
+  Widget _buildBookList(BuildContext context, WidgetRef ref, List<dynamic> books, {required bool isAudio}) {
+    final olService = ref.watch(openLibraryServiceProvider);
+    
     return SizedBox(
       height: 250,
       child: ListView.builder(
@@ -116,17 +136,36 @@ class HomeScreen extends ConsumerWidget {
         itemCount: books.length,
         itemBuilder: (context, index) {
           final book = books[index];
-          final author = (book['authors'] as List).isNotEmpty 
-              ? book['authors'][0]['name'] 
-              : 'Unknown Author';
+          final author = (book['author_name'] as List?)?.first ?? 'Unknown Author';
+          final coverUrl = olService.getCoverUrl(book['cover_i']);
           
           return BookCard(
             title: book['title'] ?? 'No Title',
             author: author,
-            coverUrl: book['formats']['image/jpeg'] ?? '',
+            coverUrl: coverUrl,
             isAudio: isAudio,
             onTap: () {
-              // TODO: Navigate to Reader
+              // Open Library doesn't provide EPUB directly, so we search Gutendex for a readable version
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Finding a readable version for you, pare... ⏳')),
+              );
+              
+              ref.read(bookServiceProvider).searchEbooks(book['title'] ?? '').then((gutendexResults) {
+                if (gutendexResults.isNotEmpty) {
+                  final epubUrl = gutendexResults[0]['formats']['application/epub+zip'];
+                  if (epubUrl != null) {
+                    ref.read(readerServiceProvider).openBook(epubUrl, book['title'] ?? 'book');
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Sorry pare, no EPUB found on Gutendex fallback.')),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Sorry pare, could not find this book on Gutendex.')),
+                  );
+                }
+              });
             },
           );
         },
@@ -134,7 +173,7 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAudioList(List<dynamic> books) {
+  Widget _buildAudioList(BuildContext context, WidgetRef ref, List<dynamic> books) {
     return SizedBox(
       height: 250,
       child: ListView.builder(
