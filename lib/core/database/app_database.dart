@@ -16,14 +16,35 @@ class Favorites extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(Constant(DateTime.now()))();
 }
 
-@DriftDatabase(tables: [Favorites])
+class LocalBooks extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get bookId => text()();
+  TextColumn get title => text()();
+  TextColumn get author => text()();
+  TextColumn get coverUrl => text()();
+  TextColumn get localPath => text()();
+  TextColumn get source => text()(); // 'open_library' or 'gutendex'
+  DateTimeColumn get createdAt => dateTime().withDefault(Constant(DateTime.now()))();
+}
+
+@DriftDatabase(tables: [Favorites, LocalBooks])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
-  // Queries
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (Migrator m) => m.createAll(),
+        onUpgrade: (Migrator m, int from, int to) async {
+          if (from == 1) {
+            await m.createTable(localBooks);
+          }
+        },
+      );
+
+  // Favorites Queries
   Future<List<Favorite>> getAllFavorites() => select(favorites).get();
   Future<int> addFavorite(FavoritesCompanion entry) => into(favorites).insert(entry);
   Future<int> removeFavorite(String bookId) => 
@@ -32,6 +53,13 @@ class AppDatabase extends _$AppDatabase {
       (select(favorites)..where((t) => t.bookId.equals(bookId)))
       .watch()
       .map((event) => event.isNotEmpty);
+
+  // LocalBooks Queries
+  Future<List<LocalBook>> getAllLocalBooks() => select(localBooks).get();
+  Stream<List<LocalBook>> watchLocalBooks() => select(localBooks).watch();
+  Future<int> addLocalBook(LocalBooksCompanion entry) => into(localBooks).insert(entry);
+  Future<LocalBook?> getLocalBookById(String bookId) => 
+      (select(localBooks)..where((t) => t.bookId.equals(bookId))).getSingleOrNull();
 }
 
 LazyDatabase _openConnection() {

@@ -19,6 +19,15 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group.contains("NanoHttpd")) {
+                val targetName = if (requested.name.contains("nanolets")) "nanohttpd-nanolets" else "nanohttpd"
+                useTarget("org.nanohttpd:$targetName:2.3.1")
+            }
+        }
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.ebook_audiobook"

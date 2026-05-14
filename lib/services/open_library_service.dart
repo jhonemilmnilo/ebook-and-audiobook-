@@ -24,4 +24,13 @@ class OpenLibraryService {
     if (coverId == null) return '';
     return 'https://covers.openlibrary.org/b/id/$coverId-M.jpg';
   }
+
+  // Helper to get Internet Archive EPUB URL
+  String? getIaEpubUrl(List<dynamic>? iaIds) {
+    if (iaIds != null && iaIds.isNotEmpty) {
+      final id = iaIds.first;
+      return 'https://archive.org/download/$id/$id.epub';
+    }
+    return null;
+  }
 }

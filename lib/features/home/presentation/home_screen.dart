@@ -5,13 +5,14 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/book_card.dart';
 import '../../../services/service_providers.dart';
+import '../../../services/library_sync_service.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ebooksAsync = ref.watch(topEbooksProvider);
+    final localBooksAsync = ref.watch(localBooksProvider);
     final audiobooksAsync = ref.watch(topAudiobooksProvider);
 
     return Scaffold(
@@ -23,38 +24,72 @@ class HomeScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 24),
-              Text(
-                'Good Morning, Pare!',
-                style: GoogleFonts.outfit(
-                  fontSize: 16,
-                  color: AppTheme.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'What are we reading today?',
-                style: GoogleFonts.outfit(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Good Morning, Pare!',
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'What are we reading today?',
+                        style: GoogleFonts.outfit(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.sync, color: AppTheme.primary),
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Starting background sync, pare! 🚀')),
+                      );
+                      ref.read(librarySyncServiceProvider).syncLibrary();
+                    },
+                  )
+                ],
               ),
               const SizedBox(height: 32),
               _buildSearchBar(),
               const SizedBox(height: 40),
               _buildSectionHeader('Top Ebooks'),
               const SizedBox(height: 16),
-              ebooksAsync.when(
+              localBooksAsync.when(
                 data: (books) {
-                  print('DEBUG: HomeScreen received ${books.length} ebooks. Rendering now... 🎨');
+                  if (books.isEmpty) {
+                    return Center(
+                      child: Column(
+                        children: [
+                          const Icon(Icons.library_books, size: 48, color: AppTheme.textSecondary),
+                          const SizedBox(height: 16),
+                          Text('No books downloaded yet.', style: GoogleFonts.inter(color: AppTheme.textSecondary)),
+                          TextButton(
+                            onPressed: () => ref.read(librarySyncServiceProvider).syncLibrary(),
+                            child: const Text('Tap sync button above to download books'),
+                          )
+                        ],
+                      ),
+                    );
+                  }
+                  print('DEBUG: HomeScreen received ${books.length} local ebooks. Rendering now... 🎨');
                   return _buildBookList(context, ref, books, isAudio: false);
                 },
                 loading: () {
-                  print('DEBUG: Ebooks are still loading... ⏳');
+                  print('DEBUG: Ebooks are still loading from DB... ⏳');
                   return const Center(child: CircularProgressIndicator());
                 },
                 error: (err, stack) {
-                  print('DEBUG ERROR: Failed to load ebooks: $err ❌');
+                  print('DEBUG ERROR: Failed to load local ebooks: $err ❌');
                   return Text('Error: $err');
                 },
               ),
@@ -63,19 +98,12 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               audiobooksAsync.when(
                 data: (books) {
-                  print('DEBUG: HomeScreen received ${books.length} audiobooks. Rendering now... 🎧');
                   return _buildAudioList(context, ref, books);
                 },
-                loading: () {
-                  print('DEBUG: Audiobooks are still loading... ⏳');
-                  return const Center(child: CircularProgressIndicator());
-                },
-                error: (err, stack) {
-                  print('DEBUG ERROR: Failed to load audiobooks: $err ❌');
-                  return Text('Error: $err');
-                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stack) => Text('Error: $err'),
               ),
-              const SizedBox(height: 120), // Padding for BottomNav
+              const SizedBox(height: 120),
             ],
           ),
         ),
@@ -127,45 +155,22 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildBookList(BuildContext context, WidgetRef ref, List<dynamic> books, {required bool isAudio}) {
-    final olService = ref.watch(openLibraryServiceProvider);
-    
     return SizedBox(
       height: 250,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: books.length,
         itemBuilder: (context, index) {
-          final book = books[index];
-          final author = (book['author_name'] as List?)?.first ?? 'Unknown Author';
-          final coverUrl = olService.getCoverUrl(book['cover_i']);
+          final book = books[index]; // This is now a LocalBook object from Drift
           
           return BookCard(
-            title: book['title'] ?? 'No Title',
-            author: author,
-            coverUrl: coverUrl,
+            title: book.title,
+            author: book.author,
+            coverUrl: book.coverUrl,
             isAudio: isAudio,
             onTap: () {
-              // Open Library doesn't provide EPUB directly, so we search Gutendex for a readable version
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Finding a readable version for you, pare... ⏳')),
-              );
-              
-              ref.read(bookServiceProvider).searchEbooks(book['title'] ?? '').then((gutendexResults) {
-                if (gutendexResults.isNotEmpty) {
-                  final epubUrl = gutendexResults[0]['formats']['application/epub+zip'];
-                  if (epubUrl != null) {
-                    ref.read(readerServiceProvider).openBook(epubUrl, book['title'] ?? 'book');
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Sorry pare, no EPUB found on Gutendex fallback.')),
-                    );
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Sorry pare, could not find this book on Gutendex.')),
-                  );
-                }
-              });
+              // Now we just pass the local path to the ReaderService! It's guaranteed to work.
+              ref.read(readerServiceProvider).openBook(context, book.localPath, book.title);
             },
           );
         },

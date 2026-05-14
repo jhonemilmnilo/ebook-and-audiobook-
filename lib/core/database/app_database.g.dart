@@ -440,15 +440,508 @@ class FavoritesCompanion extends UpdateCompanion<Favorite> {
   }
 }
 
+class $LocalBooksTable extends LocalBooks
+    with TableInfo<$LocalBooksTable, LocalBook> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalBooksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _bookIdMeta = const VerificationMeta('bookId');
+  @override
+  late final GeneratedColumn<String> bookId = GeneratedColumn<String>(
+    'book_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _authorMeta = const VerificationMeta('author');
+  @override
+  late final GeneratedColumn<String> author = GeneratedColumn<String>(
+    'author',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _coverUrlMeta = const VerificationMeta(
+    'coverUrl',
+  );
+  @override
+  late final GeneratedColumn<String> coverUrl = GeneratedColumn<String>(
+    'cover_url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _localPathMeta = const VerificationMeta(
+    'localPath',
+  );
+  @override
+  late final GeneratedColumn<String> localPath = GeneratedColumn<String>(
+    'local_path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: Constant(DateTime.now()),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    bookId,
+    title,
+    author,
+    coverUrl,
+    localPath,
+    source,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_books';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalBook> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('book_id')) {
+      context.handle(
+        _bookIdMeta,
+        bookId.isAcceptableOrUnknown(data['book_id']!, _bookIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bookIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('author')) {
+      context.handle(
+        _authorMeta,
+        author.isAcceptableOrUnknown(data['author']!, _authorMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_authorMeta);
+    }
+    if (data.containsKey('cover_url')) {
+      context.handle(
+        _coverUrlMeta,
+        coverUrl.isAcceptableOrUnknown(data['cover_url']!, _coverUrlMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_coverUrlMeta);
+    }
+    if (data.containsKey('local_path')) {
+      context.handle(
+        _localPathMeta,
+        localPath.isAcceptableOrUnknown(data['local_path']!, _localPathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_localPathMeta);
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalBook map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalBook(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      bookId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}book_id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      author: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}author'],
+      )!,
+      coverUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cover_url'],
+      )!,
+      localPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_path'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalBooksTable createAlias(String alias) {
+    return $LocalBooksTable(attachedDatabase, alias);
+  }
+}
+
+class LocalBook extends DataClass implements Insertable<LocalBook> {
+  final int id;
+  final String bookId;
+  final String title;
+  final String author;
+  final String coverUrl;
+  final String localPath;
+  final String source;
+  final DateTime createdAt;
+  const LocalBook({
+    required this.id,
+    required this.bookId,
+    required this.title,
+    required this.author,
+    required this.coverUrl,
+    required this.localPath,
+    required this.source,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['book_id'] = Variable<String>(bookId);
+    map['title'] = Variable<String>(title);
+    map['author'] = Variable<String>(author);
+    map['cover_url'] = Variable<String>(coverUrl);
+    map['local_path'] = Variable<String>(localPath);
+    map['source'] = Variable<String>(source);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  LocalBooksCompanion toCompanion(bool nullToAbsent) {
+    return LocalBooksCompanion(
+      id: Value(id),
+      bookId: Value(bookId),
+      title: Value(title),
+      author: Value(author),
+      coverUrl: Value(coverUrl),
+      localPath: Value(localPath),
+      source: Value(source),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory LocalBook.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalBook(
+      id: serializer.fromJson<int>(json['id']),
+      bookId: serializer.fromJson<String>(json['bookId']),
+      title: serializer.fromJson<String>(json['title']),
+      author: serializer.fromJson<String>(json['author']),
+      coverUrl: serializer.fromJson<String>(json['coverUrl']),
+      localPath: serializer.fromJson<String>(json['localPath']),
+      source: serializer.fromJson<String>(json['source']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'bookId': serializer.toJson<String>(bookId),
+      'title': serializer.toJson<String>(title),
+      'author': serializer.toJson<String>(author),
+      'coverUrl': serializer.toJson<String>(coverUrl),
+      'localPath': serializer.toJson<String>(localPath),
+      'source': serializer.toJson<String>(source),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  LocalBook copyWith({
+    int? id,
+    String? bookId,
+    String? title,
+    String? author,
+    String? coverUrl,
+    String? localPath,
+    String? source,
+    DateTime? createdAt,
+  }) => LocalBook(
+    id: id ?? this.id,
+    bookId: bookId ?? this.bookId,
+    title: title ?? this.title,
+    author: author ?? this.author,
+    coverUrl: coverUrl ?? this.coverUrl,
+    localPath: localPath ?? this.localPath,
+    source: source ?? this.source,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  LocalBook copyWithCompanion(LocalBooksCompanion data) {
+    return LocalBook(
+      id: data.id.present ? data.id.value : this.id,
+      bookId: data.bookId.present ? data.bookId.value : this.bookId,
+      title: data.title.present ? data.title.value : this.title,
+      author: data.author.present ? data.author.value : this.author,
+      coverUrl: data.coverUrl.present ? data.coverUrl.value : this.coverUrl,
+      localPath: data.localPath.present ? data.localPath.value : this.localPath,
+      source: data.source.present ? data.source.value : this.source,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalBook(')
+          ..write('id: $id, ')
+          ..write('bookId: $bookId, ')
+          ..write('title: $title, ')
+          ..write('author: $author, ')
+          ..write('coverUrl: $coverUrl, ')
+          ..write('localPath: $localPath, ')
+          ..write('source: $source, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    bookId,
+    title,
+    author,
+    coverUrl,
+    localPath,
+    source,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalBook &&
+          other.id == this.id &&
+          other.bookId == this.bookId &&
+          other.title == this.title &&
+          other.author == this.author &&
+          other.coverUrl == this.coverUrl &&
+          other.localPath == this.localPath &&
+          other.source == this.source &&
+          other.createdAt == this.createdAt);
+}
+
+class LocalBooksCompanion extends UpdateCompanion<LocalBook> {
+  final Value<int> id;
+  final Value<String> bookId;
+  final Value<String> title;
+  final Value<String> author;
+  final Value<String> coverUrl;
+  final Value<String> localPath;
+  final Value<String> source;
+  final Value<DateTime> createdAt;
+  const LocalBooksCompanion({
+    this.id = const Value.absent(),
+    this.bookId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.author = const Value.absent(),
+    this.coverUrl = const Value.absent(),
+    this.localPath = const Value.absent(),
+    this.source = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  LocalBooksCompanion.insert({
+    this.id = const Value.absent(),
+    required String bookId,
+    required String title,
+    required String author,
+    required String coverUrl,
+    required String localPath,
+    required String source,
+    this.createdAt = const Value.absent(),
+  }) : bookId = Value(bookId),
+       title = Value(title),
+       author = Value(author),
+       coverUrl = Value(coverUrl),
+       localPath = Value(localPath),
+       source = Value(source);
+  static Insertable<LocalBook> custom({
+    Expression<int>? id,
+    Expression<String>? bookId,
+    Expression<String>? title,
+    Expression<String>? author,
+    Expression<String>? coverUrl,
+    Expression<String>? localPath,
+    Expression<String>? source,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (bookId != null) 'book_id': bookId,
+      if (title != null) 'title': title,
+      if (author != null) 'author': author,
+      if (coverUrl != null) 'cover_url': coverUrl,
+      if (localPath != null) 'local_path': localPath,
+      if (source != null) 'source': source,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  LocalBooksCompanion copyWith({
+    Value<int>? id,
+    Value<String>? bookId,
+    Value<String>? title,
+    Value<String>? author,
+    Value<String>? coverUrl,
+    Value<String>? localPath,
+    Value<String>? source,
+    Value<DateTime>? createdAt,
+  }) {
+    return LocalBooksCompanion(
+      id: id ?? this.id,
+      bookId: bookId ?? this.bookId,
+      title: title ?? this.title,
+      author: author ?? this.author,
+      coverUrl: coverUrl ?? this.coverUrl,
+      localPath: localPath ?? this.localPath,
+      source: source ?? this.source,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (bookId.present) {
+      map['book_id'] = Variable<String>(bookId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (author.present) {
+      map['author'] = Variable<String>(author.value);
+    }
+    if (coverUrl.present) {
+      map['cover_url'] = Variable<String>(coverUrl.value);
+    }
+    if (localPath.present) {
+      map['local_path'] = Variable<String>(localPath.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalBooksCompanion(')
+          ..write('id: $id, ')
+          ..write('bookId: $bookId, ')
+          ..write('title: $title, ')
+          ..write('author: $author, ')
+          ..write('coverUrl: $coverUrl, ')
+          ..write('localPath: $localPath, ')
+          ..write('source: $source, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $FavoritesTable favorites = $FavoritesTable(this);
+  late final $LocalBooksTable localBooks = $LocalBooksTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [favorites];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [favorites, localBooks];
 }
 
 typedef $$FavoritesTableCreateCompanionBuilder =
@@ -677,10 +1170,260 @@ typedef $$FavoritesTableProcessedTableManager =
       Favorite,
       PrefetchHooks Function()
     >;
+typedef $$LocalBooksTableCreateCompanionBuilder =
+    LocalBooksCompanion Function({
+      Value<int> id,
+      required String bookId,
+      required String title,
+      required String author,
+      required String coverUrl,
+      required String localPath,
+      required String source,
+      Value<DateTime> createdAt,
+    });
+typedef $$LocalBooksTableUpdateCompanionBuilder =
+    LocalBooksCompanion Function({
+      Value<int> id,
+      Value<String> bookId,
+      Value<String> title,
+      Value<String> author,
+      Value<String> coverUrl,
+      Value<String> localPath,
+      Value<String> source,
+      Value<DateTime> createdAt,
+    });
+
+class $$LocalBooksTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalBooksTable> {
+  $$LocalBooksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bookId => $composableBuilder(
+    column: $table.bookId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get author => $composableBuilder(
+    column: $table.author,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get coverUrl => $composableBuilder(
+    column: $table.coverUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalBooksTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalBooksTable> {
+  $$LocalBooksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bookId => $composableBuilder(
+    column: $table.bookId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get author => $composableBuilder(
+    column: $table.author,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get coverUrl => $composableBuilder(
+    column: $table.coverUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalBooksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalBooksTable> {
+  $$LocalBooksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get bookId =>
+      $composableBuilder(column: $table.bookId, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get author =>
+      $composableBuilder(column: $table.author, builder: (column) => column);
+
+  GeneratedColumn<String> get coverUrl =>
+      $composableBuilder(column: $table.coverUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get localPath =>
+      $composableBuilder(column: $table.localPath, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$LocalBooksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalBooksTable,
+          LocalBook,
+          $$LocalBooksTableFilterComposer,
+          $$LocalBooksTableOrderingComposer,
+          $$LocalBooksTableAnnotationComposer,
+          $$LocalBooksTableCreateCompanionBuilder,
+          $$LocalBooksTableUpdateCompanionBuilder,
+          (
+            LocalBook,
+            BaseReferences<_$AppDatabase, $LocalBooksTable, LocalBook>,
+          ),
+          LocalBook,
+          PrefetchHooks Function()
+        > {
+  $$LocalBooksTableTableManager(_$AppDatabase db, $LocalBooksTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalBooksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalBooksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalBooksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> bookId = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> author = const Value.absent(),
+                Value<String> coverUrl = const Value.absent(),
+                Value<String> localPath = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => LocalBooksCompanion(
+                id: id,
+                bookId: bookId,
+                title: title,
+                author: author,
+                coverUrl: coverUrl,
+                localPath: localPath,
+                source: source,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String bookId,
+                required String title,
+                required String author,
+                required String coverUrl,
+                required String localPath,
+                required String source,
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => LocalBooksCompanion.insert(
+                id: id,
+                bookId: bookId,
+                title: title,
+                author: author,
+                coverUrl: coverUrl,
+                localPath: localPath,
+                source: source,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalBooksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalBooksTable,
+      LocalBook,
+      $$LocalBooksTableFilterComposer,
+      $$LocalBooksTableOrderingComposer,
+      $$LocalBooksTableAnnotationComposer,
+      $$LocalBooksTableCreateCompanionBuilder,
+      $$LocalBooksTableUpdateCompanionBuilder,
+      (LocalBook, BaseReferences<_$AppDatabase, $LocalBooksTable, LocalBook>),
+      LocalBook,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
   $$FavoritesTableTableManager get favorites =>
       $$FavoritesTableTableManager(_db, _db.favorites);
+  $$LocalBooksTableTableManager get localBooks =>
+      $$LocalBooksTableTableManager(_db, _db.localBooks);
 }

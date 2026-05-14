@@ -2,6 +2,15 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group.contains("NanoHttpd")) {
+                val targetName = if (requested.name.contains("nanolets")) "nanohttpd-nanolets" else "nanohttpd"
+                useTarget("org.nanohttpd:$targetName:2.3.1")
+            }
+        }
     }
 }
 

@@ -1,39 +1,43 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:vocsy_epub_viewer/epub_viewer.dart';
-import '../core/theme/app_theme.dart';
+import 'package:epub_view/epub_view.dart';
+import '../features/reader/presentation/reader_screen.dart';
 
 class ReaderService {
-  final Dio _dio = Dio();
-
-  Future<void> openBook(String url, String title) async {
+  Future<void> openBook(BuildContext context, String localPath, String title) async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final filePath = '${directory.path}/$title.epub';
+      final file = File(localPath);
 
-      if (!File(filePath).existsSync()) {
-        // Download if not exists
-        await _dio.download(url, filePath);
+      if (!file.existsSync() || file.lengthSync() == 0) {
+        throw Exception('File does not exist or is corrupted');
       }
 
-      // Configure Viewer
-      VocsyEpub.setConfig(
-        themeColor: AppTheme.primary,
-        identifier: 'iosBook',
-        scrollDirection: EpubScrollDirection.ALLDIRECTIONS,
-        allowSharing: true,
-        enableTts: true,
-        nightMode: true,
+      // Initialize the EpubController
+      final epubController = EpubController(
+        document: EpubDocument.openFile(file),
       );
 
-      // Open Viewer
-      VocsyEpub.open(
-        filePath,
-        lastLocation: null, // TODO: Save location in SQLite
-      );
+      // Navigate to the Reader Screen
+      if (context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ReaderScreen(
+              controller: epubController,
+              title: title,
+            ),
+          ),
+        );
+      }
     } catch (e) {
-      print('Error opening book: $e');
+      print('Error opening local book: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error opening book: $e')),
+        );
+      }
     }
   }
 }
